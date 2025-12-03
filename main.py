@@ -1,37 +1,63 @@
 import logging
-from telegram.ext import ApplicationBuilder, CommandHandler
-from handlers.compra import compra_handler
-from handlers.celular import celular_handler
-from handlers.ropa import ropa_handler
-from handlers.tech import tech_handler
-from handlers.vuelos import handle_vuelos as vuelos_handler
 import os
-import sys
-if hasattr(sys.stdout, "reconfigure"):
-    sys.stdout.reconfigure(encoding="utf-8")
-# Configuración de Logs (útil para ver si falla algo en consola)
+from dotenv import load_dotenv
+from telegram import Update
+from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes
+from db.db import Database
+from scraping.amazon import AmazonScraper
+
+load_dotenv()
+
 logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
     level=logging.INFO
 )
 
-# TU TOKEN (Te recomiendo pasarlo a .env para prod, pero acá lo hardcodeamos para probar ya)
 TOKEN = os.getenv("TELEGRAM_TOKEN")
 
+async def track_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    # Uso: /track [LINK_AMAZON] [PRECIO_MAXIMO]
+    args = context.args
+    if len(args) < 2:
+        await update.message.reply_text("❌ Uso: `/track https://amazon.com/... 500`", parse_mode='Markdown')
+        return
+
+    url = args[0]
+    try:
+        target = float(args[1])
+    except ValueError:
+        await update.message.reply_text("❌ El precio debe ser un número (ej: 500).")
+        return
+
+    msg = await update.message.reply_text("🔍 Analizando celular...")
+
+    scraper = AmazonScraper()
+    price, title = scraper.get_data(url)
+
+    if title:
+        db = Database()
+        # Guardamos con categoría 'phone'
+        db.add_product(url, target, update.effective_chat.id, category='phone', title=title)
+        
+        text = (
+            f"📱 **Celular Rastreado**\n"
+            f"📦 {title}\n"
+            f"💵 Precio Actual: **${price}**\n"
+            f"🎯 Te aviso si baja de: **${target}**"
+        )
+        await msg.edit_text(text, parse_mode='Markdown')
+    else:
+        await msg.edit_text("⚠️ No pude leer el link. Asegurate que sea de Amazon.")
+
 if __name__ == '__main__':
-    print("🚀 Iniciando Driggs Smart Buyer Bot...")
-    
-    # 1. Construir la aplicación
+    if not TOKEN:
+        print("Error: Sin token")
+        exit()
+        
     app = ApplicationBuilder().token(TOKEN).build()
     
-    # 2. Registrar los Comandos (Handlers)
-    # Sintaxis: /comando -> función que lo maneja
-    app.add_handler(CommandHandler("compra", compra_handler))   # Amazon general
-    app.add_handler(CommandHandler("celular", celular_handler)) # Planes USA
-    app.add_handler(CommandHandler("ropa", ropa_handler))       # REI / Invierno
-    app.add_handler(CommandHandler("tech", tech_handler))       # Gadgets
-    app.add_handler(CommandHandler("vuelos", vuelos_handler))   # Pasajes
+    # Un solo comando poderoso
+    app.add_handler(CommandHandler("track", track_handler))
     
-    # 3. Correr el bot (Polling)
-    print("🤖 Bot escuchando! Probá enviar /compra o /vuelos en Telegram.")
+    print("📱 Phone Tracker Bot iniciado...")
     app.run_polling()
