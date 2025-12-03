@@ -1,6 +1,6 @@
 from aiogram.types import Message
 from scraping import flights
-from scraping.flights import search_flights
+from scraping.flights import get_flight_price
 
 
 async def handle_vuelos(message: Message):
@@ -14,7 +14,7 @@ async def handle_vuelos(message: Message):
 
 
     # buscar JAC -> EZE (Buenos Aires EZE)
-    flights = search_flights(origin, 'EZE')
+    flights = get_flight_price(origin, 'EZE')
     if not flights:
         await message.answer("No encontré vuelos ahora mismo.")
         return
