@@ -4,7 +4,6 @@ from telegram import Bot
 from db.db import Database
 from scraping.amazon import AmazonScraper
 from utils.scoring import calculate_score
-from emoji import emojize
 import sys
 if hasattr(sys.stdout, "reconfigure"):
     sys.stdout.reconfigure(encoding="utf-8")
