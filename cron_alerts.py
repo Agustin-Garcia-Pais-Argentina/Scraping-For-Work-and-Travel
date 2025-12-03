@@ -4,6 +4,10 @@ from telegram import Bot
 from db.db import Database
 from scraping.amazon import AmazonScraper
 from utils.scoring import calculate_score
+from emoji import emojize
+import sys
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8")
 
 TOKEN = os.getenv("TELEGRAM_TOKEN")
 # IMPORTANTE: Leemos también tu ID para poder crear el producto a tu nombre
