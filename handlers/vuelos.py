@@ -1,5 +1,5 @@
 from aiogram.types import Message
-from bot.scraping import flights
+from scraping import flights
 from scraping.flights import search_flights
 
 
