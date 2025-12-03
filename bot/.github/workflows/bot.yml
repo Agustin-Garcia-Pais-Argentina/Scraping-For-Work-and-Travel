@@ -1,0 +1,49 @@
+name: Driggs Buyer Bot Cron
+
+on:
+  schedule:
+    - cron: '0 */2 * * *'
+  workflow_dispatch:
+
+jobs:
+  check-prices:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v3
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      - name: Setup Chrome
+        uses: browser-actions/setup-chrome@latest
+
+      # DEBUG: Esto nos mostrará qué archivos ve GitHub realmente
+      - name: List files in root
+        run: ls -R
+
+      - name: Install dependencies
+        # CAMBIO: Sacamos "bot/" porque requirements.txt está en la raíz
+        run: pip install -r requirements.txt
+
+      - name: Run Alert Script
+        env:
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          # CAMBIO: PYTHONPATH es el directorio actual (.)
+          PYTHONPATH: .
+        # CAMBIO: Ejecutamos el script directo desde la raíz
+        run: python cron_alerts.py
+
+      - name: Commit DB Changes
+        run: |
+          git config --global user.name 'DriggsBot'
+          git config --global user.email 'bot@noreply.github.com'
+          # CAMBIO: Buscamos db/ en la raíz
+          git add -f db/*.db
+          git diff --quiet && git diff --staged --quiet || (git commit -m "Auto-update DB [skip ci]" && git push)

@@ -1,0 +1,8 @@
+python-telegram-bot==20.*
+requests
+beautifulsoup4
+fake-useragent
+schedule
+python-dotenv
+selenium
+webdriver-manager
