@@ -5,7 +5,9 @@ from telegram import Update
 from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes
 from db.db import Database
 from scraping.amazon import AmazonScraper
-
+import sys
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8")
 load_dotenv()
 
 logging.basicConfig(
