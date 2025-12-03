@@ -4,7 +4,7 @@ from handlers.compra import compra_handler
 from handlers.celular import celular_handler
 from handlers.ropa import ropa_handler
 from handlers.tech import tech_handler
-from handlers.vuelos import vuelos_handler
+from handlers.vuelos import handle_vuelos as vuelos_handler
 import os
 
 # Configuración de Logs (útil para ver si falla algo en consola)
