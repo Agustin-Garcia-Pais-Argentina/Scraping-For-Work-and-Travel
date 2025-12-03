@@ -6,7 +6,9 @@ from handlers.ropa import ropa_handler
 from handlers.tech import tech_handler
 from handlers.vuelos import handle_vuelos as vuelos_handler
 import os
-
+import sys
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8")
 # Configuración de Logs (útil para ver si falla algo en consola)
 logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
