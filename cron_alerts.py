@@ -21,25 +21,6 @@ async def run_cron():
     bot = Bot(token=TOKEN)
     db = Database()
     products = db.get_products()
-    
-    # --- BLOQUE MAGICO: AUTO-SEED (SIEMBRA AUTOMÁTICA) ---
-    if not products:
-        print("📭 La base de datos está vacía. Creando producto de prueba...")
-        if CHAT_ID:
-            # Agregamos un producto "cebo" que siempre disparará alerta
-            db.add_product(
-                url="https://www.amazon.com/Apple-iPhone-Pro-128GB-Black/dp/B0CHX62V33", 
-                target_price=99999,  # Precio altísimo para que SIEMPRE avise
-                chat_id=int(CHAT_ID),
-                category='tech',
-                title="🔵 PRUEBA: iPhone 15 Pro (Auto-generado)"
-            )
-            print("✅ Producto de prueba agregado.")
-            products = db.get_products() # Recargamos la lista para que lo procese YA
-        else:
-            print("⚠️ No pude crear la prueba porque falta TELEGRAM_CHAT_ID en los secrets.")
-    # -----------------------------------------------------
-
     scraper = AmazonScraper()
 
     for p in products:
